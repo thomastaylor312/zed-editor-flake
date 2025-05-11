@@ -42,22 +42,10 @@
           };
 
           apps = {
-            zed-editor = flake-parts-lib.mkApp {
-              drv = self'.packages.zed-editor;
-              program = "zeditor";
-            };
-            zed-editor-fhs = flake-parts-lib.mkApp {
-              drv = self'.packages.zed-editor-fhs;
-              program = "zeditor";
-            };
-            zed-editor-bin = flake-parts-lib.mkApp {
-              drv = self'.packages.zed-editor-bin;
-              program = "zeditor";
-            };
-            zed-editor-bin-fhs = flake-parts-lib.mkApp {
-              drv = self'.packages.zed-editor-bin-fhs;
-              program = "zeditor";
-            };
+            zed-editor.program = "${self'.packages.zed-editor}/bin/zeditor";
+            zed-editor-fhs.program = "${self'.packages.zed-editor-fhs}/bin/zeditor";
+            zed-editor-bin.program = "${self'.packages.zed-editor-bin}/bin/zeditor";
+            zed-editor-bin-fhs.program = "${self'.packages.zed-editor-bin-fhs}/bin/zeditor";
           };
         };
       }
