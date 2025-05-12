@@ -16,11 +16,11 @@ This flake provides the following packages:
 ### Installing with Nix Run
 
 ```sh
-nix run github:username/zed-editor-flake
+nix run github:HPsaucii/zed-editor-flake
 
-nix run github:username/zed-editor-flake#zed-editor-bin
+nix run github:HPsaucii/zed-editor-flake#zed-editor-bin
 
-nix run github:username/zed-editor-flake#zed-editor-fhs
+nix run github:HPsaucii/zed-editor-flake#zed-editor-fhs
 ```
 
 ### Adding to Your Configuration
@@ -31,7 +31,7 @@ In your `flake.nix`:
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    zed-editor.url = "github:username/zed-editor-flake";
+    zed-editor.url = "github:HPsaucii/zed-editor-flake";
   };
   
   outputs = { self, nixpkgs, zed-editor, ... }:
@@ -46,7 +46,7 @@ In your `flake.nix`:
       ];
     };
 
-    homeConfigurations.username = home-manager.lib.homeManagerConfiguration {
+    homeConfigurations.HPsaucii = home-manager.lib.homeManagerConfiguration {
       modules = [
         {
           home.packages = [
