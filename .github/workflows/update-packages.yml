@@ -131,6 +131,30 @@ jobs:
           update_hash "x86_64-darwin" "Zed-x86_64.dmg" "x86_64_darwin_hash"
           update_hash "aarch64-darwin" "Zed-aarch64.dmg" "aarch64_darwin_hash"
 
+      - name: Get cargoHash by building with a dummy hash
+        if: steps.check-zed-version.outputs.update_needed == 'true'
+        id: cargo-hash
+        run: |
+          sed -i 's|cargoHash = "sha256-[^"]*"|cargoHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="|' packages/zed-editor/default.nix
+          
+          echo "Attempting to build zed-editor to get cargoHash..."
+          BUILD_OUTPUT=$(nix --extra-experimental-features flakes build .#zed-editor 2>&1 || true)
+          
+          CARGO_HASH=$(echo "$BUILD_OUTPUT" | grep 'hash mismatch in fixed-output derivation' -A 2 | grep 'got:' | head -1 | awk '{print $2}')
+          
+          if [ -n "$CARGO_HASH" ]; then
+            echo "Calculated cargoHash: $CARGO_HASH"
+            echo "cargo_hash=$CARGO_HASH" >> $GITHUB_OUTPUT
+            
+            sed -i "s|cargoHash = \"sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\"|cargoHash = \"$CARGO_HASH\"|" packages/zed-editor/default.nix
+            echo "Updated cargoHash in packages/zed-editor/default.nix"
+          else
+            echo "::error::Could not extract cargoHash from build output. Check the build output for details."
+            sed -i 's|cargoHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="||' packages/zed-editor/default.nix
+            exit 1
+          fi
+
+
       - name: Update flake.lock
         if: steps.check-zed-version.outputs.update_needed == 'true'
         run: |
@@ -150,34 +174,19 @@ jobs:
             Changes:
             - Updated package versions in both `zed-editor` and `zed-editor-bin`
             - Updated source hash in `zed-editor`
+            - Updated cargo hash in `zed-editor`
             - Updated binary hashes in `zed-editor-bin`
             - Updated `flake.lock`
             
             ### Automatic Hash Updates
             
             Source hash for zed-editor: `${{ steps.source-hash.outputs.source_hash }}`
+            Cargo hash for zed-editor: `${{ steps.cargo-hash.outputs.cargo_hash }}`
             
             Binary hashes for zed-editor-bin:
             - x86_64-linux: `${{ steps.binary-hashes.outputs.x86_64_linux_hash }}`
             - aarch64-linux: `${{ steps.binary-hashes.outputs.aarch64_linux_hash }}`
             - x86_64-darwin: `${{ steps.binary-hashes.outputs.x86_64_darwin_hash }}`
             - aarch64-darwin: `${{ steps.binary-hashes.outputs.aarch64_darwin_hash }}`
-            
-            ### Manual Steps Required
-            
-            The cargoHash needs to be updated manually:
-            
-            ```bash
-            # Clone the repository
-            git checkout update-zed-editor
-            TMP_DIR=$(mktemp -d)
-            git clone --depth 1 --branch "v${{ steps.check-zed-version.outputs.new_version }}" https://github.com/zed-industries/zed "$TMP_DIR"
-            
-            # Get the cargoHash (requires cargo-prefetch)
-            cd "$TMP_DIR"
-            nix run nixpkgs#cargo-prefetch -- prefetch --cargo-toml Cargo.toml | tail -n 1
-            
-            # Then update the cargoHash in packages/zed-editor/default.nix
-            ```
             
             This update was created automatically by GitHub Actions.
