@@ -71,12 +71,9 @@ The automated update workflow:
 2. Updates package versions in both packages
 3. Updates the source hash for `zed-editor`
 4. Updates binary hashes for `zed-editor-bin`
-5. Updates the flake lock file
-6. Creates a pull request with all changes and instructions for any manual steps
-
-### Manual Steps After PR Creation
-
-When a PR is created, you'll typically only need to update the cargo hash for `zed-editor`. Detailed instructions are included in the PR description.
+5. Updates the cargoHash for `zed-editor`
+6. Updates the flake lock file
+7. Creates a pull request with all changes
 
 ### Manual Trigger
 
