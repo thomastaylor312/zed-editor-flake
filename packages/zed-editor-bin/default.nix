@@ -159,15 +159,25 @@ in
       	cp "$appdir/bin/zed"       $out/bin/
       	cp "$appdir/libexec/zed-editor" $out/libexec/
 
-      # copy the share tree (icons, desktop files, etc)
-      cp -R "$appdir/share"/* $out/share/
+      	# copy the share tree (icons, desktop files, etc)
+      	cp -R "$appdir/share"/* $out/share/
+
+      	patchelf \
+      	--set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
+      	--set-rpath "${lib.makeLibraryPath ([stdenv.cc.cc] ++ nixDeps)}" \
+      	"$out/bin/zed"
+
+      	patchelf \
+      	--set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
+      	--set-rpath "${lib.makeLibraryPath ([stdenv.cc.cc] ++ nixDeps)}" \
+      	"$out/libexec/zed-editor"
 
       	# wrap them so they pick up our Nix store libraries
       	wrapProgram $out/bin/zed \
-      		--prefix LD_LIBRARY_PATH ":" ${libPath}
+      	--prefix LD_LIBRARY_PATH ":" ${libPath}
 
       	wrapProgram $out/libexec/zed-editor \
-      		--prefix LD_LIBRARY_PATH ":" ${libPath}
+      	--prefix LD_LIBRARY_PATH ":" ${libPath}
 
       	# provide a zeditor‐alias
       	ln -s zed $out/bin/zeditor
@@ -177,7 +187,7 @@ in
       	mkdir -p $out/Applications $out/bin
       	mv "$appdir" $out/Applications/
       	ln -s $out/Applications/$(basename "$appdir")/Contents/MacOS/Zed \
-      				$out/bin/zeditor
+      	$out/bin/zeditor
       fi
     '';
 
